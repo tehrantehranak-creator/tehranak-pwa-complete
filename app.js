@@ -31,6 +31,15 @@ class TehranakApp {
                 price: 25000000,
                 area: 45,
                 images: ['https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800']
+            },
+            {
+                id: 'prop-3',
+                title: 'ویلای لوکس در زعفرانیه',
+                category: 'residential',
+                address: 'تهران، زعفرانیه، کوچه بهار',
+                price: 15000000000,
+                area: 300,
+                images: ['https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800']
             }
         ];
         
@@ -43,6 +52,15 @@ class TehranakApp {
                 propertyType: 'residential',
                 budgetMin: 5000000000,
                 budgetMax: 10000000000
+            },
+            {
+                id: 'client-2',
+                name: 'فاطمه احمدی',
+                phone: '09128765432',
+                requestType: 'rent',
+                propertyType: 'commercial',
+                budgetMin: 50000000,
+                budgetMax: 100000000
             }
         ];
         
@@ -53,6 +71,14 @@ class TehranakApp {
                 date: '1403/09/15',
                 time: '14:30',
                 priority: 'high',
+                isCompleted: false
+            },
+            {
+                id: 'task-2',
+                title: 'تماس با مشتری زعفرانیه',
+                date: '1403/09/16',
+                time: '16:00',
+                priority: 'medium',
                 isCompleted: false
             }
         ];
@@ -89,6 +115,7 @@ class TehranakApp {
         this.loadTheme();
         this.updateStats();
         this.startSliderRotation();
+        this.renderTabContent();
         
         // Initialize AI voice assistant
         this.initializeVoiceAssistant();
@@ -145,358 +172,529 @@ class TehranakApp {
             properties: `املاک (${this.properties.length})`,
             clients: `مشتریان (${this.clients.length})`,
             tasks: `وظایف (${this.tasks.length})`,
-            commission: `کمیسیون‌ها (${this.commissions.length})`,
-            add: 'ثبت موارد جدید'
+            commission: `کمیسیون (${this.commissions.length})`,
+            add: 'ثبت مورد جدید'
         };
-        headerTitle.textContent = titles[tab] || titles.home;
-
-        // Update content based on tab
-        this.updateTabContent(tab);
+        
+        if (headerTitle) {
+            headerTitle.textContent = titles[tab] || 'سامانه تهرانک';
+        }
+        
+        // Show/hide content
+        this.renderTabContent();
     }
 
-    updateTabContent(tab) {
-        const content = document.querySelector('.content');
+    renderTabContent() {
+        // Hide all content areas
+        const mainContent = document.getElementById('main-content');
+        const tabContents = document.querySelectorAll('[id$="-tab"]');
         
-        switch (tab) {
-            case 'home':
-                this.renderHomeContent(content);
-                break;
+        tabContents.forEach(tab => {
+            tab.style.display = 'none';
+        });
+        
+        // Show home content by default, or specific tab content
+        if (this.currentTab === 'home') {
+            mainContent.style.display = 'block';
+        } else {
+            mainContent.style.display = 'none';
+            const tabContent = document.getElementById(`${this.currentTab}-tab`);
+            if (tabContent) {
+                tabContent.style.display = 'block';
+            }
+        }
+        
+        // Render specific tab content
+        switch (this.currentTab) {
             case 'properties':
-                this.renderPropertiesContent(content);
+                this.renderPropertiesList();
                 break;
             case 'clients':
-                this.renderClientsContent(content);
+                this.renderClientsList();
                 break;
             case 'tasks':
-                this.renderTasksContent(content);
+                this.renderTasksList();
                 break;
             case 'commission':
-                this.renderCommissionContent(content);
-                break;
-            case 'add':
-                this.renderAddContent(content);
+                this.renderCommissionList();
                 break;
         }
     }
 
-    renderHomeContent(content) {
-        content.innerHTML = `
-            <div style="animation: slideUp 0.4s ease-out;">
-                <!-- Statistics Cards -->
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon blue">
-                            <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M3 21h18v-2H3v2zM21 11H3v2h18v-2zM21 1H3v2h18V1z"/>
-                                <path d="M5 21V5h14v16H5zM5 1v16h14V1H5z"/>
-                            </svg>
-                        </div>
-                        <div class="stat-title">املاک</div>
-                        <div class="stat-value">${this.properties.length}</div>
-                        <div class="stat-subtitle">فعال</div>
-                    </div>
-
-                    <div class="stat-card">
-                        <div class="stat-icon orange">
-                            <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                                <circle cx="9" cy="7" r="4"/>
-                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                            </svg>
-                        </div>
-                        <div class="stat-title">مشتریان</div>
-                        <div class="stat-value">${this.clients.length}</div>
-                        <div class="stat-subtitle">جدید: ۲</div>
-                    </div>
-
-                    <div class="stat-card">
-                        <div class="stat-icon green">
-                            <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                            </svg>
-                        </div>
-                        <div class="stat-title">درآمد</div>
-                        <div class="stat-value">${this.calculateIncome()}M</div>
-                        <div class="stat-subtitle">این ماه</div>
-                    </div>
-
-                    <div class="stat-card">
-                        <div class="stat-icon pink">
-                            <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M9 11H7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2z"/>
-                                <path d="M13 7h-2a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
-                                <path d="M17 11h-2a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
-                            </svg>
-                        </div>
-                        <div class="stat-title">وظایف</div>
-                        <div class="stat-value">${this.tasks.filter(t => !t.isCompleted).length}</div>
-                        <div class="stat-subtitle">در انتظار</div>
-                    </div>
-                </div>
-
-                <!-- Property Slider -->
-                <div class="property-slider" id="property-slider">
-                    <img src="${this.properties[0].images[0]}" alt="Property" class="slider-image" id="slider-image">
-                    <div class="slider-overlay"></div>
-                    <div class="slider-content">
-                        <div class="slider-title">${this.properties[0].title}</div>
-                        <div class="slider-subtitle">${this.properties[0].address}</div>
-                        <div class="slider-price">${this.formatPrice(this.properties[0].price)}</div>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-
-    renderPropertiesContent(content) {
-        const propertiesHtml = this.properties.map(property => `
+    renderPropertiesList() {
+        const container = document.getElementById('properties-list');
+        if (!container) return;
+        
+        container.innerHTML = this.properties.map(property => `
             <div style="
-                background: #1c1c1e; 
-                border-radius: 24px; 
-                padding: 16px; 
-                margin-bottom: 16px; 
-                border: 1px solid rgba(255,255,255,0.1);
-                box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-                cursor: pointer;
-                transition: all 0.3s ease;
-            " onclick="app.openPropertyDetail('${property.id}')">
-                <img src="${property.images[0]}" alt="${property.title}" style="
-                    width: 100%; 
-                    height: 120px; 
-                    object-fit: cover; 
-                    border-radius: 12px;
-                    margin-bottom: 12px;
-                ">
-                <div style="margin-bottom: 8px;">
-                    <h3 style="font-size: 16px; font-weight: bold; color: white; margin-bottom: 4px;">${property.title}</h3>
-                    <p style="font-size: 12px; color: #94A3B8; display: flex; align-items: center;">
-                        <span style="margin-left: 4px;">📍</span>
-                        ${property.address}
-                    </p>
-                </div>
-                <div style="color: #10B981; font-weight: bold; font-size: 14px;">
-                    ${this.formatPrice(property.price)}
-                </div>
-                <div style="font-size: 12px; color: #94A3B8; margin-top: 4px;">
-                    ${property.area} متر مربع
-                </div>
-            </div>
-        `).join('');
-
-        content.innerHTML = `
-            <div style="animation: slideUp 0.4s ease-out;">
-                <h2 style="font-size: 24px; font-weight: bold; color: white; margin-bottom: 24px;">
-                    املاک (${this.properties.length})
-                </h2>
-                ${propertiesHtml}
-                ${this.properties.length === 0 ? `
-                    <div style="text-align: center; padding: 48px; color: #94A3B8;">
-                        <svg width="48" height="48" style="margin-bottom: 16px; opacity: 0.5;" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M3 21h18v-2H3v2zM21 11H3v2h18v-2zM21 1H3v2h18V1z"/>
-                            <path d="M5 21V5h14v16H5zM5 1v16h14V1H5z"/>
-                        </svg>
-                        <p>هنوز ملکی ثبت نشده است</p>
-                    </div>
-                ` : ''}
-            </div>
-        `;
-    }
-
-    renderClientsContent(content) {
-        const clientsHtml = this.clients.map(client => `
-            <div style="
-                background: #1c1c1e; 
-                border-radius: 16px; 
-                padding: 16px; 
-                margin-bottom: 16px; 
+                background: #1E293B;
+                border-radius: 16px;
+                padding: 16px;
+                margin-bottom: 16px;
                 border: 1px solid rgba(255,255,255,0.1);
             ">
-                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-                    <div style="
-                        width: 40px; 
-                        height: 40px; 
-                        border-radius: 50%; 
-                        background: linear-gradient(135deg, #EC4899, #F97316);
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        color: white;
-                        font-weight: bold;
-                        font-size: 14px;
-                    ">${client.name.charAt(0)}</div>
-                    <div style="flex: 1;">
-                        <h4 style="font-weight: bold; color: white; margin-bottom: 4px;">${client.name}</h4>
-                        <span style="font-size: 12px; color: #94A3B8;">
-                            ${client.requestType === 'sale' ? 'خرید' : 'اجاره'} - 
-                            ${client.propertyType === 'residential' ? 'مسکونی' : 'تجاری'}
-                        </span>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h3 style="color: white; font-weight: bold; margin-bottom: 8px;">${property.title}</h3>
+                        <p style="color: #94A3B8; font-size: 14px; margin-bottom: 4px;">📍 ${property.address}</p>
+                        <p style="color: #10B981; font-weight: bold;">${this.formatPrice(property.price)}</p>
+                        <p style="color: #64748B; font-size: 12px;">${property.area} متر • ${property.category === 'residential' ? 'مسکونی' : 'تجاری'}</p>
                     </div>
-                    <div style="width: 6px; height: 6px; background: #8B5CF6; border-radius: 50%;"></div>
-                </div>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px; margin-bottom: 12px;">
-                    <div style="background: rgba(255,255,255,0.05); padding: 8px; border-radius: 8px;">
-                        <div style="color: #94A3B8;">بودجه:</div>
-                        <div style="color: white; font-weight: 500;">
-                            ${client.budgetMin && client.budgetMax 
-                                ? `${(client.budgetMin / 1000000).toFixed(0)}-${(client.budgetMax / 1000000).toFixed(0)}M`
-                                : 'نامشخص'
-                            }
-                        </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button onclick="app.openPropertyDetail('${property.id}')" style="
+                            background: #3B82F6;
+                            color: white;
+                            border: none;
+                            padding: 8px 16px;
+                            border-radius: 8px;
+                            cursor: pointer;
+                        ">جزئیات</button>
+                        <button onclick="app.editProperty('${property.id}')" style="
+                            background: rgba(255,255,255,0.1);
+                            color: white;
+                            border: none;
+                            padding: 8px;
+                            border-radius: 8px;
+                            cursor: pointer;
+                        ">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                <path d="m18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                            </svg>
+                        </button>
                     </div>
-                    <div style="background: rgba(255,255,255,0.05); padding: 8px; border-radius: 8px;">
-                        <div style="color: #94A3B8;">متراژ:</div>
-                        <div style="color: white; font-weight: 500;">نامشخص</div>
-                    </div>
-                </div>
-                
-                <div style="display: flex; gap: 8px;">
-                    <button onclick="window.open('tel:${client.phone}', '_self')" style="
-                        flex: 1;
-                        background: rgba(59, 130, 246, 0.1);
-                        color: #3B82F6;
-                        border: none;
-                        padding: 8px 12px;
-                        border-radius: 8px;
-                        font-size: 14px;
-                        font-weight: 500;
-                        cursor: pointer;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        gap: 4px;
-                    ">
-                        <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-                        </svg>
-                        تماس
-                    </button>
-                    <button style="
-                        background: rgba(249, 115, 22, 0.1);
-                        color: #F97316;
-                        border: none;
-                        padding: 8px;
-                        border-radius: 8px;
-                        cursor: pointer;
-                    ">
-                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                        </svg>
-                    </button>
-                    <button style="
-                        background: rgba(239, 68, 68, 0.1);
-                        color: #EF4444;
-                        border: none;
-                        padding: 8px;
-                        border-radius: 8px;
-                        cursor: pointer;
-                    ">
-                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-                            <polyline points="3,6 5,6 21,6"/>
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                            <line x1="10" y1="11" x2="10" y2="17"/>
-                            <line x1="14" y1="11" x2="14" y2="17"/>
-                        </svg>
-                    </button>
                 </div>
             </div>
         `).join('');
+    }
 
-        content.innerHTML = `
-            <div style="animation: slideUp 0.4s ease-out;">
-                <h2 style="font-size: 24px; font-weight: bold; color: white; margin-bottom: 24px;">
-                    مشتریان (${this.clients.length})
-                </h2>
-                ${clientsHtml}
-                ${this.clients.length === 0 ? `
-                    <div style="text-align: center; padding: 48px; color: #94A3B8;">
-                        <svg width="48" height="48" style="margin-bottom: 16px; opacity: 0.5;" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                            <circle cx="9" cy="7" r="4"/>
-                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                        </svg>
-                        <p>هنوز مشتری‌ای ثبت نشده است</p>
+    renderClientsList() {
+        const container = document.getElementById('clients-list');
+        if (!container) return;
+        
+        container.innerHTML = this.clients.map(client => `
+            <div style="
+                background: #1E293B;
+                border-radius: 16px;
+                padding: 16px;
+                margin-bottom: 16px;
+                border: 1px solid rgba(255,255,255,0.1);
+            ">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h3 style="color: white; font-weight: bold; margin-bottom: 8px;">${client.name}</h3>
+                        <p style="color: #94A3B8; font-size: 14px; margin-bottom: 4px;">📱 ${client.phone}</p>
+                        <p style="color: #64748B; font-size: 12px;">
+                            ${client.requestType === 'sale' ? 'خرید' : 'رهن و اجاره'} • 
+                            ${client.propertyType === 'residential' ? 'مسکونی' : 'تجاری'}
+                        </p>
+                        <p style="color: #F97316; font-size: 12px;">
+                            بودجه: ${this.formatPrice(client.budgetMin)} - ${this.formatPrice(client.budgetMax)}
+                        </p>
                     </div>
-                ` : ''}
+                    <div style="display: flex; gap: 8px;">
+                        <button onclick="window.open('tel:${client.phone}', '_self')" style="
+                            background: #10B981;
+                            color: white;
+                            border: none;
+                            padding: 8px;
+                            border-radius: 8px;
+                            cursor: pointer;
+                        ">📞</button>
+                        <button onclick="app.editClient('${client.id}')" style="
+                            background: rgba(255,255,255,0.1);
+                            color: white;
+                            border: none;
+                            padding: 8px;
+                            border-radius: 8px;
+                            cursor: pointer;
+                        ">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                <path d="m18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
             </div>
-        `;
+        `).join('');
     }
 
-    renderTasksContent(content) {
-        content.innerHTML = `
-            <div style="animation: slideUp 0.4s ease-out;">
-                <h2 style="font-size: 24px; font-weight: bold; color: white; margin-bottom: 24px;">
-                    وظایف (${this.tasks.length})
-                </h2>
-                <div style="text-align: center; padding: 48px; color: #94A3B8;">
-                    <svg width="48" height="48" style="margin-bottom: 16px; opacity: 0.5;" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M9 11H7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2z"/>
-                        <path d="M13 7h-2a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
-                        <path d="M17 11h-2a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
-                    </svg>
-                    <p>بخش وظایف در حال تکمیل است</p>
-                    <p style="font-size: 12px; margin-top: 8px;">به زودی با امکانات کامل منتشر خواهد شد</p>
+    renderTasksList() {
+        const container = document.getElementById('tasks-list');
+        if (!container) return;
+        
+        container.innerHTML = this.tasks.map(task => `
+            <div style="
+                background: #1E293B;
+                border-radius: 16px;
+                padding: 16px;
+                margin-bottom: 16px;
+                border: 1px solid rgba(255,255,255,0.1);
+            ">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h3 style="color: white; font-weight: bold; margin-bottom: 8px;">${task.title}</h3>
+                        <p style="color: #94A3B8; font-size: 14px; margin-bottom: 4px;">
+                            📅 ${task.date} • ⏰ ${task.time}
+                        </p>
+                        <p style="color: ${task.priority === 'high' ? '#EF4444' : task.priority === 'medium' ? '#F97316' : '#64748B'}; font-size: 12px;">
+                            اولویت: ${task.priority === 'high' ? 'بالا' : task.priority === 'medium' ? 'متوسط' : 'پایین'}
+                        </p>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button onclick="app.toggleTask('${task.id}')" style="
+                            background: ${task.isCompleted ? '#10B981' : 'rgba(255,255,255,0.1)'};
+                            color: white;
+                            border: none;
+                            padding: 8px;
+                            border-radius: 8px;
+                            cursor: pointer;
+                        ">${task.isCompleted ? '✅' : '⭕'}</button>
+                        <button onclick="app.editTask('${task.id}')" style="
+                            background: rgba(255,255,255,0.1);
+                            color: white;
+                            border: none;
+                            padding: 8px;
+                            border-radius: 8px;
+                            cursor: pointer;
+                        ">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                <path d="m18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    renderCommissionList() {
+        const container = document.getElementById('commission-list');
+        if (!container) return;
+        
+        container.innerHTML = this.commissions.map(commission => `
+            <div style="
+                background: #1E293B;
+                border-radius: 16px;
+                padding: 16px;
+                margin-bottom: 16px;
+                border: 1px solid rgba(255,255,255,0.1);
+            ">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h3 style="color: white; font-weight: bold; margin-bottom: 8px;">
+                            خریدار: ${commission.buyerName}
+                        </h3>
+                        <p style="color: #94A3B8; font-size: 14px; margin-bottom: 4px;">
+                            فروشنده: ${commission.sellerName}
+                        </p>
+                        <p style="color: #10B981; font-weight: bold; margin-bottom: 4px;">
+                            ${this.formatPrice(commission.propertyPrice)}
+                        </p>
+                        <p style="color: #F97316; font-size: 12px;">
+                            سهم شما: ${this.formatPrice(commission.agentShare)}
+                        </p>
+                    </div>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <span style="
+                            background: ${commission.isPaid ? '#10B981' : '#F97316'};
+                            color: white;
+                            padding: 4px 8px;
+                            border-radius: 4px;
+                            font-size: 12px;
+                        ">
+                            ${commission.isPaid ? 'پرداخت شده' : 'در انتظار'}
+                        </span>
+                        <button onclick="app.editCommission('${commission.id}')" style="
+                            background: rgba(255,255,255,0.1);
+                            color: white;
+                            border: none;
+                            padding: 8px;
+                            border-radius: 8px;
+                            cursor: pointer;
+                        ">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                <path d="m18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    openSearch() {
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        `;
+        
+        modal.innerHTML = `
+            <div style="
+                background: #1E293B;
+                border-radius: 24px;
+                width: 90%;
+                max-width: 500px;
+                max-height: 80vh;
+                overflow: hidden;
+                animation: slideUp 0.4s ease;
+            ">
+                <div style="padding: 24px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;">
+                    <h2 style="color: white; font-size: 20px; font-weight: bold;">جستجو</h2>
+                    <button onclick="this.closest('.modal').remove()" style="background: none; border: none; color: #94A3B8; cursor: pointer;">
+                        <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M18 6L6 18M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                <div style="padding: 24px;">
+                    <div style="margin-bottom: 16px;">
+                        <label style="color: #94A3B8; display: block; margin-bottom: 8px; font-size: 14px;">عنوان یا آدرس</label>
+                        <input type="text" id="search-text" placeholder="مثال: آپارتمان نیاوران" style="
+                            width: 100%;
+                            background: rgba(255,255,255,0.1);
+                            border: 1px solid rgba(255,255,255,0.2);
+                            border-radius: 12px;
+                            padding: 12px;
+                            color: white;
+                            font-size: 16px;
+                            outline: none;
+                        ">
+                    </div>
+                    <div style="display: flex; gap: 12px; margin-top: 24px;">
+                        <button onclick="app.performSearch()" style="
+                            flex: 1;
+                            background: #3B82F6;
+                            color: white;
+                            border: none;
+                            padding: 12px;
+                            border-radius: 12px;
+                            font-weight: 500;
+                            cursor: pointer;
+                        ">جستجو</button>
+                        <button onclick="app.closeModal()" style="
+                            background: rgba(255,255,255,0.1);
+                            color: white;
+                            border: none;
+                            padding: 12px;
+                            border-radius: 12px;
+                            cursor: pointer;
+                        ">لغو</button>
+                    </div>
                 </div>
             </div>
         `;
+        
+        modal.className = 'modal';
+        document.body.appendChild(modal);
+        
+        // Close on background click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
     }
 
-    renderCommissionContent(content) {
-        content.innerHTML = `
-            <div style="animation: slideUp 0.4s ease-out;">
-                <h2 style="font-size: 24px; font-weight: bold; color: white; margin-bottom: 24px;">
-                    کمیسیون‌ها (${this.commissions.length})
-                </h2>
-                <div style="text-align: center; padding: 48px; color: #94A3B8;">
-                    <svg width="48" height="48" style="margin-bottom: 16px; opacity: 0.5;" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                    <p>بخش کمیسیون‌ها در حال تکمیل است</p>
-                    <p style="font-size: 12px; margin-top: 8px;">محاسبه و پیگیری کمیسیون‌ها</p>
+    performSearch() {
+        const searchText = document.getElementById('search-text').value.trim();
+        if (!searchText) {
+            alert('لطفاً متن جستجو را وارد کنید');
+            return;
+        }
+        
+        // Simple search in properties
+        const results = this.properties.filter(property => 
+            property.title.toLowerCase().includes(searchText.toLowerCase()) ||
+            property.address.toLowerCase().includes(searchText.toLowerCase())
+        );
+        
+        if (results.length > 0) {
+            this.closeModal();
+            alert(`${results.length} مورد یافت شد`);
+        } else {
+            alert('هیچ موردی یافت نشد');
+        }
+    }
+
+    openSettings() {
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        `;
+        
+        modal.innerHTML = `
+            <div style="
+                background: #1E293B;
+                border-radius: 24px;
+                width: 90%;
+                max-width: 500px;
+                max-height: 80vh;
+                overflow: hidden;
+                animation: slideUp 0.4s ease;
+            ">
+                <div style="padding: 24px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;">
+                    <h2 style="color: white; font-size: 20px; font-weight: bold;">تنظیمات</h2>
+                    <button onclick="this.closest('.modal').remove()" style="background: none; border: none; color: #94A3B8; cursor: pointer;">
+                        <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M18 6L6 18M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                <div style="padding: 24px;">
+                    <div style="margin-bottom: 16px;">
+                        <label style="color: #94A3B8; display: block; margin-bottom: 8px; font-size: 14px;">نام کاربری</label>
+                        <input type="text" id="username" value="${this.currentUser || 'مدیر سیستم'}" style="
+                            width: 100%;
+                            background: rgba(255,255,255,0.1);
+                            border: 1px solid rgba(255,255,255,0.2);
+                            border-radius: 12px;
+                            padding: 12px;
+                            color: white;
+                            font-size: 16px;
+                            outline: none;
+                        ">
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <label style="color: #94A3B8; display: block; margin-bottom: 8px; font-size: 14px;">تم</label>
+                        <select id="theme-select" style="
+                            width: 100%;
+                            background: rgba(255,255,255,0.1);
+                            border: 1px solid rgba(255,255,255,0.2);
+                            border-radius: 12px;
+                            padding: 12px;
+                            color: white;
+                            font-size: 16px;
+                            outline: none;
+                        ">
+                            <option value="dark" ${this.theme === 'dark' ? 'selected' : ''}>تیره</option>
+                            <option value="light" ${this.theme === 'light' ? 'selected' : ''}>روشن</option>
+                        </select>
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <label style="color: #94A3B8; display: block; margin-bottom: 8px; font-size: 14px;">زبان</label>
+                        <select id="language-select" style="
+                            width: 100%;
+                            background: rgba(255,255,255,0.1);
+                            border: 1px solid rgba(255,255,255,0.2);
+                            border-radius: 12px;
+                            padding: 12px;
+                            color: white;
+                            font-size: 16px;
+                            outline: none;
+                        ">
+                            <option value="fa">فارسی</option>
+                            <option value="en">English</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; gap: 12px; margin-top: 24px;">
+                        <button onclick="app.saveSettings()" style="
+                            flex: 1;
+                            background: #3B82F6;
+                            color: white;
+                            border: none;
+                            padding: 12px;
+                            border-radius: 12px;
+                            font-weight: 500;
+                            cursor: pointer;
+                        ">ذخیره</button>
+                        <button onclick="app.logout()" style="
+                            flex: 1;
+                            background: #EF4444;
+                            color: white;
+                            border: none;
+                            padding: 12px;
+                            border-radius: 12px;
+                            font-weight: 500;
+                            cursor: pointer;
+                        ">خروج</button>
+                    </div>
                 </div>
             </div>
         `;
+        
+        modal.className = 'modal';
+        document.body.appendChild(modal);
+        
+        // Close on background click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
     }
 
-    renderAddContent(content) {
-        content.innerHTML = `
-            <div style="text-align: center; padding: 48px; animation: slideUp 0.4s ease-out;">
-                <div style="
-                    width: 48px; 
-                    height: 48px; 
-                    margin: 0 auto 16px; 
-                    background: linear-gradient(135deg, #8B5CF6, #3B82F6);
-                    border-radius: 50%;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                ">
-                    <svg width="24" height="24" fill="none" stroke="white" stroke-width="3" viewBox="0 0 24 24">
-                        <line x1="12" y1="5" x2="12" y2="19"/>
-                        <line x1="5" y1="12" x2="19" y2="12"/>
-                    </svg>
-                </div>
-                <h2 style="font-size: 20px; font-weight: bold; color: white; margin-bottom: 8px;">
-                    ثبت موارد جدید
-                </h2>
-                <p style="color: #94A3B8; font-size: 14px;">
-                    لطفاً از دکمه + در نوار پایین استفاده کنید
-                </p>
-            </div>
-        `;
+    saveSettings() {
+        const username = document.getElementById('username').value;
+        const theme = document.getElementById('theme-select').value;
+        const language = document.getElementById('language-select').value;
+        
+        this.currentUser = username;
+        this.theme = theme;
+        
+        // Save to localStorage
+        localStorage.setItem('tehranak-username', username);
+        localStorage.setItem('tehranak-theme', theme);
+        localStorage.setItem('tehranak-language', language);
+        
+        // Apply theme
+        this.loadTheme();
+        
+        // Update header
+        const headerTitle = document.getElementById('header-title');
+        if (headerTitle) {
+            headerTitle.textContent = `سلام ${username}`;
+        }
+        
+        this.closeModal();
+        alert('تنظیمات با موفقیت ذخیره شد');
+    }
+
+    logout() {
+        if (confirm('آیا مطمئن هستید که می‌خواهید خارج شوید؟')) {
+            localStorage.removeItem('tehranak-username');
+            this.currentUser = null;
+            alert('با موفقیت خارج شدید');
+            window.location.reload();
+        }
+    }
+
+    closeModal() {
+        const modal = document.querySelector('.modal');
+        if (modal) {
+            modal.remove();
+        }
     }
 
     setupDynamicIsland() {
         const island = document.getElementById('dynamic-island');
         const islandContent = document.getElementById('island-content');
         
-        let currentMode = 0;
-        const modes = ['TEHRANAK', '', ''];
+        if (!island || !islandContent) return;
         
-        // Update time every second
+        // Cycling content when collapsed
+        let currentMode = 0;
+        const modes = ['تهرانک', 'دستیار صوتی', 'الکسا'];
+        
         setInterval(() => {
             if (!this.isDynamicIslandExpanded) {
                 const now = new Date();
@@ -699,105 +897,88 @@ class TehranakApp {
     }
 
     updateVoiceModeUI() {
-        // Update island if open
         if (this.isDynamicIslandExpanded) {
-            const statusElement = document.querySelector('[style*="حالت صوتی"]');
-            if (statusElement) {
-                statusElement.textContent = this.isVoiceModeActive 
-                    ? (this.isListening ? 'گوش‌به‌زنگ...' : 'حالت صوتی فعال')
-                    : 'حالت صوتی خاموش';
-            }
+            this.showAlexaInterface();
         }
     }
 
     handleVoiceInput(transcript) {
         console.log('Voice input:', transcript);
         
-        // Mock AI response based on input
-        let response = 'متوجه نشدم. می‌تونید واضح‌تر صحبت کنید؟';
-        
-        if (transcript.includes('سلام') || transcript.includes('hello')) {
-            response = 'سلام! چطور می‌تونم کمکتون کنم؟';
-        } else if (transcript.includes('املاک') || transcript.includes('property')) {
-            response = `شما ${this.properties.length} ملک دارید. می‌خواید در مورد کدوم صحبت کنیم؟`;
-        } else if (transcript.includes('مشتری') || transcript.includes('client')) {
-            response = `${this.clients.length} مشتری دارید. می‌خواید چه کاری انجام بدیم؟`;
-        } else if (transcript.includes('وظیفه') || transcript.includes('task')) {
-            response = `${this.tasks.filter(t => !t.isCompleted).length} وظیفه در انتظار دارید.`;
+        // Simple responses based on Persian commands
+        let response = '';
+        if (transcript.includes('املاک')) {
+            response = 'تعداد املاک شما ' + this.properties.length + ' عدد است';
+        } else if (transcript.includes('مشتری')) {
+            response = 'تعداد مشتریان شما ' + this.clients.length + ' عدد است';
+        } else if (transcript.includes('وظیفه')) {
+            response = 'تعداد وظایف شما ' + this.tasks.filter(t => !t.isCompleted).length + ' عدد است';
+        } else {
+            response = 'متوجه نشدم، لطفاً دوباره بفرمایید';
         }
         
-        // Show response
-        this.showAlexaMessage('alexa', response);
+        // Speak the response
+        this.speak(response);
         
-        // Text to speech
-        this.speakText(response);
+        // Show in chat area
+        this.addChatMessage(transcript, 'user');
+        this.addChatMessage(response, 'bot');
+    }
+
+    addChatMessage(message, sender) {
+        // Simple implementation - add to chat area
+        const chatArea = document.querySelector('#dynamic-island .overflow-y-auto');
+        if (chatArea) {
+            const messageDiv = document.createElement('div');
+            messageDiv.style.cssText = `
+                margin-bottom: 12px;
+                display: ${sender === 'user' ? 'flex' : 'flex'};
+                justify-content: ${sender === 'user' ? 'flex-end' : 'flex-start'};
+            `;
+            
+            messageDiv.innerHTML = `
+                <div style="
+                    background: ${sender === 'user' ? '#3B82F6' : 'rgba(255,255,255,0.1)'};
+                    color: white;
+                    padding: 8px 12px;
+                    border-radius: 12px;
+                    max-width: 70%;
+                    font-size: 14px;
+                ">${message}</div>
+            `;
+            
+            chatArea.appendChild(messageDiv);
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
     }
 
     sendAlexaMessage() {
         const input = document.getElementById('alexa-input');
-        const message = input.value.trim();
-        
-        if (message) {
-            this.showAlexaMessage('user', message);
+        if (input && input.value.trim()) {
+            const message = input.value.trim();
             input.value = '';
             
-            // Mock AI response
-            setTimeout(() => {
-                let response = 'متوجه نشدم. می‌تونید واضح‌تر بگید؟';
-                
-                if (message.includes('سلام')) {
-                    response = 'سلام! خوشحالم که اینجا هستید. چطور می‌تونم کمکتون کنم؟';
-                } else if (message.includes('املاک')) {
-                    response = `شما ${this.properties.length} ملک دارید. آیا می‌خواید اطلاعات بیشتری بدونید؟`;
-                } else if (message.includes('مشتری')) {
-                    response = `${this.clients.length} مشتری دارید. می‌تونید لیستشون رو ببینید.`;
-                }
-                
-                this.showAlexaMessage('alexa', response);
-                this.speakText(response);
-            }, 1000);
+            // Handle text input similar to voice
+            this.handleVoiceInput(message);
         }
     }
 
-    showAlexaMessage(role, content) {
-        const chatArea = document.querySelector('.content');
-        const messageDiv = document.createElement('div');
-        messageDiv.innerHTML = `
-            <div style="
-                display: flex; 
-                ${role === 'user' ? 'justify-content: flex-start;' : 'justify-content: flex-end;'}
-                margin-bottom: 12px;
-            ">
-                <div style="
-                    max-width: 80%; 
-                    padding: 12px; 
-                    border-radius: 16px; 
-                    font-size: 14px;
-                    ${role === 'user' 
-                        ? 'background: #333333; color: white; border-bottom-left-radius: 4px;'
-                        : 'background: linear-gradient(135deg, #8B5CF6, #3B82F6); color: white; border-bottom-right-radius: 4px;'
-                    }
-                ">${content}</div>
-            </div>
-        `;
-        
-        // Insert message before input area
-        const inputArea = chatArea.querySelector('.input-area');
-        if (inputArea) {
-            chatArea.insertBefore(messageDiv, inputArea);
-        }
-    }
-
-    speakText(text) {
+    speak(text) {
         if ('speechSynthesis' in window) {
-            // Cancel any ongoing speech
-            speechSynthesis.cancel();
-
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'fa-IR';
-            utterance.pitch = 1.3;
-            utterance.rate = 1.0;
-
+            utterance.rate = 0.8;
+            utterance.pitch = 1.0;
+            
+            // Try to find a Persian voice
+            const voices = speechSynthesis.getVoices();
+            const persianVoice = voices.find(voice => 
+                voice.lang.includes('fa') || voice.lang.includes('Persian')
+            );
+            if (persianVoice) {
+                utterance.voice = persianVoice;
+            }
+            
             speechSynthesis.speak(utterance);
         }
     }
@@ -885,16 +1066,6 @@ class TehranakApp {
             document.body.style.backgroundColor = '#F8FAFC';
             document.body.style.color = '#1E293B';
         }
-    }
-
-    openSearch() {
-        console.log('Opening search...');
-        // TODO: Implement search modal
-    }
-
-    openSettings() {
-        console.log('Opening settings...');
-        // TODO: Implement settings modal
     }
 
     openPropertyDetail(propertyId = null) {
@@ -1002,6 +1173,31 @@ class TehranakApp {
                 modal.remove();
             }
         });
+    }
+
+    editProperty(id) {
+        alert('ویرایش ملک در حال توسعه...');
+    }
+
+    editClient(id) {
+        alert('ویرایش مشتری در حال توسعه...');
+    }
+
+    editTask(id) {
+        alert('ویرایش وظیفه در حال توسعه...');
+    }
+
+    editCommission(id) {
+        alert('ویرایش کمیسیون در حال توسعه...');
+    }
+
+    toggleTask(id) {
+        const task = this.tasks.find(t => t.id === id);
+        if (task) {
+            task.isCompleted = !task.isCompleted;
+            this.renderTasksList();
+            this.updateStats();
+        }
     }
 }
 
